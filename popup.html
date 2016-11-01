@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset=utf-8>
+<html>
+<head>
+  <title>Battledex</title>
+  <!--Javascript Files-->
+  <script src="js/jquery-1.11.3.js"></script>
+  <script src="js/awesomplete.js" async></script>
+  <script src="js/popup.js"></script>
+  <script src="js/bootstrap.js"></script>
+
+  <!--Stylesheets-->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/awesomplete.css" />
+  <link rel="stylesheet" href="css/bootstrap.css">
+
+  <!--Fonts-->
+  <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">  
+</head>
+
+<body>
+  <div id="intro"><h2>Kaomojiboard</h2> Click on any kaomoji to copy it to your clipboard!</div>
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#happysection" aria-controls="happysection" role="tab" data-toggle="tab">happy</a></li>
+    <li role="presentation"><a href="#sadsection" aria-controls="sadsection" role="tab" data-toggle="tab">sad</a></li>
+    <li role="presentation"><a href="#angrysection" aria-controls="angrysection" role="tab" data-toggle="tab">angry</a></li>
+    <li role="presentation"><a href="#animalsection" aria-controls="animalsection" role="tab" data-toggle="tab">animals</a></li>
+    <li role="presentation"><a href="#tablesection" aria-controls="tablesection" role="tab" data-toggle="tab">table</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane" id="angrysection">  
+        <div class="section" id="angry"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="sadsection">
+        <div class="section" id="sad"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="animalsection">
+        <div class="section" id="animals"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane active" id="happysection">
+        <div class="section" id="happy"></div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="tablesection">
+        <div class="section" id="table"></div>
+      </div>
+    </div>
+</body>
+</html>
