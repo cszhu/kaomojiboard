@@ -10,6 +10,20 @@ li {
   font-size:18px;
 }
 
+ul {
+  display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+  display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+  display: -ms-flexbox;      /* TWEENER - IE 10 */
+  display: -webkit-flex;     /* NEW - Chrome */
+  display: flex; 
+  
+  -webkit-box-justify-content: center;
+  -moz-box-justify-content: center;
+  -webkit-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
+}
+
 h2 {
   margin: 0px !important;
 }
@@ -40,6 +54,11 @@ h2 {
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
 
+  -webkit-box-justify-content: center;
+  -moz-box-justify-content: center;
+  -webkit-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
 }
 
 .kaomoji {
@@ -65,9 +84,8 @@ h2 {
   padding-right: 5px;
   padding-left: 5px;
   min-width: 30px;
-  font-size: 20px;
+  font-size: 18px;
   background-color: white;
-  border: none;
   border-radius: 20px;
   margin: 5px;
 }
@@ -81,6 +99,62 @@ h2 {
   -moz-transition:.3s;
   -webkit-transition:.3s;
   transition:.3s;
+
+  -webkit-animation:rainbow 1s infinite;
+  -ms-animation:rainbow 1s infinite;
+  -o-animation:rainbow 1s infinite;
+  animation:rainbow 1s infinite;
+} @-webkit-keyframes rainbow {
+0% {color: #cc0000;}
+10% {color: #ff8000;}
+20% {color: #e6b800;}
+30% {color: #66cc00;}
+40% {color: #00cc00;}
+50% {color: #00cc66;}
+60% {color: #00cccc;}
+70% {color: #0080ff;}
+80% {color: #0000ff;}
+90% {color: #8000ff;}
+100% {color: #ff0080;}
+}
+@-ms-keyframes rainbow {
+0% {color: #cc0000;}
+10% {color: #ff8000;}
+20% {color: #e6b800;}
+30% {color: #66cc00;}
+40% {color: #00cc00;}
+50% {color: #00cc66;}
+60% {color: #00cccc;}
+70% {color: #0080ff;}
+80% {color: #0000ff;}
+90% {color: #8000ff;}
+100% {color: #ff0080;}
+}
+@-o-keyframes rainbow {
+0% {color: #cc0000;}
+10% {color: #ff8000;}
+20% {color: #e6b800;}
+30% {color: #66cc00;}
+40% {color: #00cc00;}
+50% {color: #00cc66;}
+60% {color: #00cccc;}
+70% {color: #0080ff;}
+80% {color: #0000ff;}
+90% {color: #8000ff;}
+100% {color: #ff0080;}
+}
+@keyframes rainbow {
+0% {color: #cc0000;}
+10% {color: #ff8000;}
+20% {color: #e6b800;}
+30% {color: #66cc00;}
+40% {color: #00cc00;}
+50% {color: #00cc66;}
+60% {color: #00cccc;}
+70% {color: #0080ff;}
+80% {color: #0000ff;}
+90% {color: #8000ff;}
+100% {color: #ff0080;}
 }
 
 p {
