@@ -90,6 +90,37 @@ h2 {
   margin: 5px;
 }
 
+.alert {
+  display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+  display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+  display: -ms-flexbox;      /* TWEENER - IE 10 */
+  display: -webkit-flex;     /* NEW - Chrome */
+  display: flex; 
+
+  -webkit-box-justify-content: center;
+  -moz-box-justify-content: center;
+  -webkit-justify-content: center;
+  -ms-justify-content: center;
+  justify-content: center;
+
+  -webkit-box-flex-align-items: center;
+  -moz-box-flex-align-items: center;
+  -webkit-flex-align-items: center;
+  -ms-flex-align-items: center;
+  align-items: center;
+
+  opacity: 0.7;
+  width: 70px;
+  height: 70px;
+  border-radius: 50% !important;
+  position:fixed;
+  top:45%;
+  left:45%;
+  background-color: lightgreen;
+  color: green;
+  font-size: 40px;
+}
+
 .kaomoji:hover {
   background-color: lightgrey;
   cursor: pointer; 
