@@ -24,10 +24,10 @@ window.addEventListener('load', function() {
     appendTextOntoDoc("animals", kaomoji, kaomojiID);
   }
 
-  for (var j = 0; j < kaomojiJSON.table.length; j++) {
-    var kaomoji = kaomojiJSON.table[j];
+  for (var j = 0; j < kaomojiJSON.funny.length; j++) {
+    var kaomoji = kaomojiJSON.funny[j];
     var kaomojiID = kaomoji;
-    appendTextOntoDoc("table", kaomoji, kaomojiID);
+    appendTextOntoDoc("funny", kaomoji, kaomojiID);
   }
   
   var kaomojiClasses = document.getElementsByClassName('kaomoji');
@@ -308,6 +308,7 @@ var kaomojiJSON={
     "ʕ•̀ω•́ʔ✧",
     "ʕ•ӫ̫͡•ʔ",
     "ʕ•͡દ•ʔ",
+    "ʕง•ᴥ•ʔง",
     "ヾ(;￫㉨￩)ﾉ",
     "ヾ(´(ｴ)｀ﾉﾞ",
     "ʕʽɞʼʔ",
@@ -551,7 +552,7 @@ var kaomojiJSON={
     "☆*:.｡. o(≧▽≦)o .｡.:*☆",
     "｡:.ﾟヽ(´∀`｡)ﾉﾟ.:｡+ﾟ"
   ],
-  "table": [
+  "funny": [
     "(╯°□°）╯︵ ┻━┻",
     "(ノಠ益ಠ)ノ彡┻━┻",
     "(┛ಠДಠ)┛彡┻━┻",
@@ -561,4 +562,22 @@ var kaomojiJSON={
     "┬─┬ノ(ಠ_ಠノ)",
     "(ヘ･_･)ヘ┳━┳",
     "(╯°Д°）╯︵/(.□ . )",
-    "(╯°□°）╯︵ /( ‿⌓‿ )\\"]} 
+    "(╯°□°）╯︵ /( ‿⌓‿ )\\",
+    "( ͡° ͜ʖ ͡°)",
+    "ᕦ( ͡° ͜ʖ ͡°)ᕤ",
+    "( ͡☉ ͜ʖ ͡☉)",
+    "(☞ ͡° ͜ʖ ͡°)☞",
+    "(´༎ຶ ͜ʖ ༎ຶ `)♡",
+    "	° ͜ʖ ͡ –	✧",
+    "( ͡~ ͜ʖ ͡°)",
+    "[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]",
+    "*:..｡o○( ͡° ͜ʖ ͡°)○o｡..:*",
+    "( ͡° ͜ʖ ͡°)━☆ﾟ.*･｡ﾟ",
+    "︵‿︵(´ ͡༎ຶ ͜ʖ ͡༎ຶ `)︵‿︵",
+    "✺◟( ͡° ͜ʖ ͡°)◞✺",
+    "✧･ﾟ: *✧･ﾟ:*( ͡ᵔ ͜ʖ ͡ᵔ )*:･ﾟ✧*:･ﾟ✧",
+    "（╯°□°）╯︵ ( ͜。 ͡ʖ ͜。) ",
+    "(╭ರ_⊙)",
+    "ᕙ〳 ರ ︿ ರೃ 〵ᕗ",
+    "╰〳˵ ✖ Д ✖ ˵〵⊃━☆ﾟ.*･｡ﾟ"
+  ]}
