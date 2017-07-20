@@ -1,5 +1,4 @@
 window.addEventListener('load', function() {
-
   for (var j = 0; j < kaomojiJSON.angry.length; j++) {
     var kaomoji = kaomojiJSON.angry[j];
     var kaomojiID = kaomoji;
@@ -29,10 +28,73 @@ window.addEventListener('load', function() {
     var kaomojiID = kaomoji;
     appendTextOntoDoc("funny", kaomoji, kaomojiID);
   }
-  
+
+  updateRecent();
+
   var kaomojiClasses = document.getElementsByClassName('kaomoji');
   for (var i = 0; i < kaomojiClasses.length; i++) {
-      kaomojiClasses[i].addEventListener('click', copyTextToClipboard, false);
+      kaomojiClasses[i].addEventListener('click', handleClick, false);
+  }
+
+  function updateRecent() {
+    var node = document.getElementById("recent");
+
+    while (node.hasChildNodes()) {
+        node.removeChild(node.lastChild);
+    }
+
+    chrome.storage.sync.get(null, function(items) {
+      console.log(items);
+      var sortable = [];
+      for (var kaomoji in items) {
+          sortable.push([kaomoji, items[kaomoji]]);
+      }
+
+      sortable.sort(function(a, b) {
+          return b[1] - a[1];
+      });
+
+      console.log(sortable);
+
+      for (var j = 0; j < sortable.length; j++) {
+          var kaomoji = sortable[j]["0"];
+          var kaomojiID = kaomoji;
+          appendTextOntoDoc("recent", kaomoji, kaomojiID);
+      }
+
+      var kaomojiClasses = document.getElementsByClassName('kaomoji');
+      for (var i = 0; i < kaomojiClasses.length; i++) {
+          kaomojiClasses[i].addEventListener('click', handleClick, false);
+      };
+    });
+  }
+
+  function handleClick(e) {
+    updateRecent();
+    copyTextToClipboard(e);
+
+    var text = document.getElementById(e.target.id);
+    kaomojiFace = text.innerText;
+
+    chrome.storage.sync.get(kaomojiFace, function(items){
+        console.log(items);
+        if (jQuery.isEmptyObject(items)) {
+            console.log("not in yet");
+            var addToTable = {};
+            addToTable[kaomojiFace] = 1;
+            chrome.storage.sync.set(addToTable, function() {
+                console.log("success");
+            });
+        } else {
+            console.log("it exists");
+            var count = items[kaomojiFace];
+            var addToTable = {};
+            addToTable[kaomojiFace] = count + 1;
+            chrome.storage.sync.set(addToTable, function() {
+                console.log("success");
+            });
+        }
+    });
   }
 
   function copyTextToClipboard(e) {
@@ -61,8 +123,7 @@ function appendTextOntoDoc(elementId, text, textID) {
   source.appendChild(pNode);
 }
 
-function tempAlert(msg)
-{
+function tempAlert(msg) {
   var el = document.createElement("div");
   el.setAttribute("class", "alert");
   el.setAttribute("id", "alert");
@@ -72,7 +133,7 @@ function tempAlert(msg)
 }
 
 
-var kaomojiJSON={
+var kaomojiJSON = {
   "angry": [
     "( ≧Д≦)",
     "o(-`д´- ｡)",
