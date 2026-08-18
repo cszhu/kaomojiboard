@@ -1,55 +1,56 @@
 <!doctype html>
-<meta charset=utf-8>
 <html>
 <head>
-  <title>Battledex</title>
-  <!--Javascript Files-->
-  <script src="js/jquery-1.11.3.js"></script>
-  <script src="js/awesomplete.js" async></script>
+  <meta charset="utf-8">
+  <title>kaomojiBoard</title>
+
+  <!--Data + logic-->
+  <script src="js/kaomoji.js"></script>
   <script src="js/popup.js"></script>
-  <script src="js/bootstrap.js"></script>
 
-  <!--Stylesheets-->
+  <!--Stylesheet-->
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/awesomplete.css" />
-  <link rel="stylesheet" href="css/bootstrap.css">
-
-  <!--Fonts-->
-  <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">  
 </head>
 
 <body>
-  <div id="intro"><h2>Kaomojiboard</h2>(*^▽^*) Click on any kaomoji to copy it!</div>
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#recentsection" aria-controls="recentsection" role="tab" data-toggle="tab">recent</a></li>
-    <li role="presentation"><a href="#happysection" aria-controls="happysection" role="tab" data-toggle="tab">happy</a></li>
-    <li role="presentation"><a href="#sadsection" aria-controls="sadsection" role="tab" data-toggle="tab">sad</a></li>
-    <li role="presentation"><a href="#angrysection" aria-controls="angrysection" role="tab" data-toggle="tab">angry</a></li>
-    <li role="presentation"><a href="#animalsection" aria-controls="animalsection" role="tab" data-toggle="tab">animals</a></li>
-    <li role="presentation"><a href="#funnysection" aria-controls="funnysection" role="tab" data-toggle="tab">funny</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane active" id="recentsection">  
-        <div class="section" id="recent"></div>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="angrysection">  
-        <div class="section" id="angry"></div>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="sadsection">
-        <div class="section" id="sad"></div>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="animalsection">
-        <div class="section" id="animals"></div>
-      </div>
-      <div role="tabpanel" class="tab-pane " id="happysection">
-        <div class="section" id="happy"></div>
-      </div>
-      <div role="tabpanel" class="tab-pane" id="funnysection">
-        <div class="section" id="funny"></div>
-      </div>
+  <div id="intro">
+    <div id="header-row">
+      <h2>Kaomojiboard</h2>
+      <button id="settings-btn" type="button" aria-label="Settings" title="Settings">⚙️</button>
     </div>
+    (*^▽^*) Click to copy! Tap a button below to filter.
+  </div>
+
+  <!-- Settings menu (toggled by the gear) -->
+  <div id="settings-menu" hidden>
+    <button class="menu-item" type="button" data-action="reset-recent">Reset recent history</button>
+    <button class="menu-item" type="button" data-action="reset-favorites">Reset favorites</button>
+  </div>
+
+  <!-- Category filter pills -->
+  <div id="filters">
+    <button class="pill active" data-category="happy"   aria-pressed="true">happy</button>
+    <button class="pill active" data-category="funny"   aria-pressed="true">funny</button>
+    <button class="pill active" data-category="sad"     aria-pressed="true">sad</button>
+    <button class="pill active" data-category="angry"   aria-pressed="true">angry</button>
+    <button class="pill active" data-category="love"    aria-pressed="true">love</button>
+    <button class="pill active" data-category="cute"    aria-pressed="true">cute</button>
+    <button class="pill active" data-category="animals" aria-pressed="true">animals</button>
+  </div>
+
+  <!-- Pinned favorites (hidden until you save one) -->
+  <div id="fav-wrap" hidden>
+    <div class="cat-label">favorites</div>
+    <div class="section" id="favorites"></div>
+  </div>
+
+  <!-- Pinned frequently used (hidden until there is click history) -->
+  <div id="recent-wrap" hidden>
+    <div class="cat-label">frequently used</div>
+    <div class="section" id="recent"></div>
+  </div>
+
+  <!-- All categories, filled at runtime by popup.js -->
+  <div id="all"></div>
 </body>
 </html>

@@ -1,7 +1,120 @@
+/* VT323 by Peter Hull - SIL Open Font License 1.1, see fonts/OFL.txt.
+   Vendored locally so the extension makes no network requests at runtime. */
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/VT323-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/VT323-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* Bundled Noto subsets — a guaranteed fallback so every kaomoji glyph
+   renders on any machine, not just ones with the right OS fonts. Each
+   subset was generated from Google Fonts to cover only the codepoints this
+   extension actually uses. SIL OFL 1.1, see fonts/noto/OFL.txt. */
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans.woff2') format('woff2');
+  unicode-range: U+4f, U+6f, U+ac, U+af-b0, U+b4, U+b7, U+d2-d3, U+f2-f3, U+14e-14f, U+1aa, U+20e-20f, U+25e, U+294-296, U+29a, U+2bc-2bd, U+2c5, U+2c7, U+2d6, U+2d8, U+2db, U+2f3, U+2f5, U+300-301, U+306, U+309, U+311, U+324, U+32e, U+352, U+35c, U+361, U+398, U+3a6, U+3a8, U+3ad, U+3b5-3b6, U+3b8, U+3bc, U+3c0, U+3c2, U+3c9, U+3ce, U+414, U+417, U+431, U+434, U+449, U+46a, U+4e9, U+505, U+1d17, U+1d25, U+1d52, U+1d54, U+1d85, U+1d98, U+1ece-1ecf, U+1f72, U+1f7c, U+2018-2019, U+2022, U+2025, U+2035, U+203e-2040, U+2070, U+2080, U+20db, U+20dd;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-armenian.woff2') format('woff2');
+  unicode-range: U+55e;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-arabic.woff2') format('woff2');
+  unicode-range: U+648, U+6a1;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-telugu.woff2') format('woff2');
+  unicode-range: U+c6a;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-kannada.woff2') format('woff2');
+  unicode-range: U+ca0, U+ca5, U+cb0;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-thai.woff2') format('woff2');
+  unicode-range: U+e4f, U+e51;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-georgian.woff2') format('woff2');
+  unicode-range: U+10da;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-canadian-aboriginal.woff2') format('woff2');
+  unicode-range: U+141b, U+1555, U+1557, U+15d2, U+15d5, U+15e2-15e3, U+15e8;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-symbols-2.woff2') format('woff2');
+  unicode-range: U+2180, U+2200, U+2207-2208, U+220b, U+221e, U+2229, U+2266-2267, U+2282, U+2286-2287, U+2296, U+2299, U+229d, U+22cb-22cc, U+22de-22df, U+2310, U+2312-2314, U+2323, U+233e, U+2501, U+2514, U+2518, U+2533, U+253b, U+2565, U+256d-256f, U+2579, U+2582-2583, U+25a0-25a1, U+25bc-25bd, U+25bf, U+25c7, U+25c9, U+25cb, U+25ce-25d1, U+25d5, U+25dc-25df, U+25e1-25e3, U+2606, U+2609, U+261d-261e, U+2661, U+2665, U+2670-2671, U+2686, U+270c, U+2716, U+2727, U+272a, U+272f-2730, U+273f-2740, U+275b, U+2764;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-jp.woff2') format('woff2');
+  unicode-range: U+3000, U+3002-3003, U+3030, U+3034-3035, U+3063-3065, U+3078-3079, U+3099, U+309c-309e, U+30a7, U+30c4-30c5, U+30ce, U+30df, U+30ed, U+30fb-30fe, U+310f, U+31c1, U+3268, U+4e41, U+4eba, U+51f8, U+5f61, U+76ca, U+7c73, U+8278, U+fe35, U+fe3f, U+fe43, U+fe4f, U+ff01, U+ff08-ff09, U+ff0d, U+ff0f, U+ff1a-ff1b, U+ff20, U+ff34, U+ff3c, U+ff3e-ff40, U+ff49, U+ff4d, U+ff56-ff58, U+ff61, U+ff64-ff65, U+ff74, U+ff89, U+ff9f, U+ffe3, U+ffe9, U+ffeb;
+}
+@font-face {
+  font-family: 'KaomojiFallback';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/noto/noto-sans-kr.woff2') format('woff2');
+  unicode-range: U+1102, U+116e, U+11ab, U+3145, U+3147, U+3181, U+b204, U+b208;
+}
+
 body {
   font-family: sans-serif;
   font-size: 14px;
-  min-width: 380px;
+  min-width: 500px;
   min-height: 250px;
 }
 
@@ -35,7 +148,7 @@ h2 {
 }
 
 .section {
-  width: 425px;
+  width: 500px;
   display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
   display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
   display: -ms-flexbox;      /* TWEENER - IE 10 */
@@ -62,6 +175,20 @@ h2 {
 }
 
 .kaomoji {
+  /* The curated kaomojis span many Unicode blocks, so no single font covers
+     them all. Chrome picks a font per character, walking this list in order.
+     OS fonts come first so ordinary characters keep their native look; the
+     bundled 'KaomojiFallback' (subsetted Noto, see the @font-face rules above)
+     is the last real family before sans-serif, guaranteeing every glyph
+     renders even on machines missing the relevant OS fonts. */
+  font-family:
+    "Helvetica Neue", Helvetica, Arial,
+    "Segoe UI", "Segoe UI Symbol", "Segoe UI Emoji",
+    "Yu Gothic UI", Meiryo, "MS PGothic", "MS Gothic",
+    "Malgun Gothic", "Nirmala UI", "Leelawadee UI", "Microsoft Himalaya",
+    "Hiragino Sans", "Apple SD Gothic Neo", "Apple Symbols", Kailasa, Thonburi,
+    'KaomojiFallback', sans-serif;
+  position: relative;        /* anchor for the favorite heart */
   display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
   display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
   display: -ms-flexbox;      /* TWEENER - IE 10 */
@@ -109,7 +236,6 @@ h2 {
   -ms-flex-align-items: center;
   align-items: center;
 
-  opacity: 0.7;
   width: 70px;
   height: 70px;
   border-radius: 50% !important;
@@ -119,6 +245,18 @@ h2 {
   background-color: lightgreen;
   color: green;
   font-size: 40px;
+
+  /* Fade + shrink out on its own, then popup.js removes it on animationend.
+     Replaces the old jQuery fadeOut so no library is needed. */
+  opacity: 0.7;
+  animation: kaomoji-alert-out 1.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes kaomoji-alert-out {
+  0%   { opacity: 0.7; transform: scale(1); }
+  70%  { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0;   transform: scale(0.8); }
 }
 
 .kaomoji:hover {
@@ -192,3 +330,137 @@ p {
   padding: 0 !important;
   margin: 0 !important;
 }
+/* ---- pill-filter UI (added for the v2 redesign) ---- */
+
+* { box-sizing: border-box; }
+body { margin: 0; position: relative; }
+/* Keep the `hidden` attribute authoritative even for elements we give an
+   explicit display (e.g. #settings-menu is display:flex when shown). */
+[hidden] { display: none !important; }
+
+#filters {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background-color: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.pill {
+  font-family: VT323, monospace;
+  font-size: 17px;
+  line-height: 1;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid #bbb;
+  background-color: #fff;
+  color: #999;
+  cursor: pointer;
+  transition: .15s;
+}
+
+.pill:hover { border-color: #888; color: #555; }
+
+/* Active pills get a soft pastel per category so on/off is obvious at a glance.
+   Inactive pills stay outlined grey (see .pill above). */
+.pill.active { border-color: transparent; }
+
+.pill.active[data-category="happy"]   { background-color: #ffe08a; color: #7a5c00; }
+.pill.active[data-category="funny"]   { background-color: #ffc9a3; color: #8a4620; }
+.pill.active[data-category="sad"]     { background-color: #a8d8ea; color: #1f5a72; }
+.pill.active[data-category="angry"]   { background-color: #ffb3ba; color: #8a2b33; }
+.pill.active[data-category="love"]    { background-color: #ffc8dd; color: #9a3b63; }
+.pill.active[data-category="cute"]    { background-color: #e0c3fc; color: #5b3a8a; }
+.pill.active[data-category="animals"] { background-color: #b5ead7; color: #1f6b4f; }
+
+.cat-label {
+  font-family: VT323, monospace;
+  font-size: 16px;
+  color: #aaa;
+  text-align: center;
+  letter-spacing: 1px;
+  margin: 10px 0 2px;
+}
+
+.cat-block.hidden { display: none; }
+
+#all { padding-bottom: 10px; }
+
+/* ---- favorites: pixel heart on each kaomoji ---- */
+
+.fav-heart {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  width: 12px;
+  height: 10px;
+  opacity: 0;
+  pointer-events: none;      /* only clickable once visible (hover/favorited),
+                                so a corner click still copies otherwise */
+  cursor: pointer;
+  background-color: #9a9a9a;
+  transition: opacity .15s, background-color .15s;
+  /* pixel-heart silhouette as a mask, tinted by background-color above */
+  -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%207%206'%3E%3Cpath%20d='M1,0h2v1H1zM4,0h2v1H4zM0,1h7v2H0zM1,3h5v1H1zM2,4h3v1H2zM3,5h1v1H3z'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%207%206'%3E%3Cpath%20d='M1,0h2v1H1zM4,0h2v1H4zM0,1h7v2H0zM1,3h5v1H1zM2,4h3v1H2zM3,5h1v1H3z'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+.kaomoji:hover .fav-heart,
+.kaomoji.favorited .fav-heart { pointer-events: auto; }
+.kaomoji:hover .fav-heart { opacity: .5; }
+.fav-heart:hover { opacity: 1; background-color: #ff5c8a; }
+.kaomoji.favorited .fav-heart { opacity: 1; background-color: #ff5c8a; }
+
+/* ---- header row + gear + settings menu ---- */
+
+#header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#settings-btn {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .7;
+}
+#settings-btn:hover { opacity: 1; }
+
+#settings-menu {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  font-family: VT323, monospace;
+  font-size: 16px;
+  text-align: left;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #333;
+  cursor: pointer;
+}
+.menu-item:hover { background: #f0f0f0; }
+.menu-item[data-armed="1"] { color: #c0392b; font-weight: bold; }

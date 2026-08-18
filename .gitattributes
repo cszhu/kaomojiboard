@@ -1,0 +1,7 @@
+# Normalize line endings so the repo stays consistent across Windows/macOS.
+* text=auto
+
+# Binary assets — never touch these.
+*.png binary
+*.gif binary
+*.woff2 binary

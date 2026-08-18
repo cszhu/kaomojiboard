@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Packaged extension uploads
+*.zip
+
+# Editor / tooling
+node_modules/
+.vscode/

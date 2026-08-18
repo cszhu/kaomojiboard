@@ -1,7 +1,7 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "kaomojiBoard",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "A Chrome extension that copies Asian kaomojis. You can copy one directly to your clipboard by clicking on it.",
   "icons": {
     "16": "icon.png",
@@ -11,8 +11,12 @@
   "permissions": [
     "storage"
   ],
-  "browser_action": {
-    "default_icon": "icon.png",
+  "action": {
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
     "default_popup": "popup.html",
     "default_title": "kaomojiBoard"
   }

@@ -1,658 +1,317 @@
-window.addEventListener('load', function() {
-  for (var j = 0; j < kaomojiJSON.angry.length; j++) {
-    var kaomoji = kaomojiJSON.angry[j];
-    var kaomojiID = kaomoji;
-    appendTextOntoDoc("angry", kaomoji, kaomojiID);
-  }
+'use strict';
 
-  for (var j = 0; j < kaomojiJSON.happy.length; j++) {
-    var kaomoji = kaomojiJSON.happy[j];
-    var kaomojiID = kaomoji;
-    appendTextOntoDoc("happy", kaomoji, kaomojiID);
-  }
+// Category order for the pills and the section list. Must match KAOMOJI keys
+// in js/kaomoji.js and the data-category values in popup.html.
+var CATEGORIES = ['happy', 'funny', 'sad', 'angry', 'love', 'cute', 'animals'];
 
-  for (var j = 0; j < kaomojiJSON.sad.length; j++) {
-    var kaomoji = kaomojiJSON.sad[j];
-    var kaomojiID = kaomoji;
-    appendTextOntoDoc("sad", kaomoji, kaomojiID);
-  }
+var RECENT_LIMIT = 10;       // total items shown in the "frequently used" strip
+var RECENT_TAIL = 4;         // trailing slots reserved for the most-recent picks
+var RECENT_ORDER_MAX = 15;   // how many recency entries we keep in storage
 
-  for (var j = 0; j < kaomojiJSON.animals.length; j++) {
-    var kaomoji = kaomojiJSON.animals[j];
-    var kaomojiID = kaomoji;
-    appendTextOntoDoc("animals", kaomoji, kaomojiID);
-  }
+// Reserved storage keys (a kaomoji can never equal these), stored in sync
+// alongside the numeric per-kaomoji counts.
+var RECENT_ORDER_KEY = '__recentOrder__';
+var FAV_KEY = '__favorites__';
 
-  for (var j = 0; j < kaomojiJSON.funny.length; j++) {
-    var kaomoji = kaomojiJSON.funny[j];
-    var kaomojiID = kaomoji;
-    appendTextOntoDoc("funny", kaomoji, kaomojiID);
-  }
+var favorites = []; // loaded once at startup, kept in sync with storage
 
-  updateRecent();
+document.addEventListener('DOMContentLoaded', function () {
+  chrome.storage.sync.get([FAV_KEY], function (data) {
+    favorites = (data && Array.isArray(data[FAV_KEY])) ? data[FAV_KEY] : [];
 
-  var kaomojiClasses = document.getElementsByClassName('kaomoji');
-  for (var i = 0; i < kaomojiClasses.length; i++) {
-      kaomojiClasses[i].addEventListener('click', handleClick, false);
-  }
+    buildSections();
+    document.getElementById('all').addEventListener('click', onKaomojiClick);
+    document.getElementById('fav-wrap').addEventListener('click', onKaomojiClick);
+    document.getElementById('recent-wrap').addEventListener('click', onKaomojiClick);
+    document.getElementById('filters').addEventListener('click', onPillClick);
+    setupSettingsMenu();
 
-  function updateRecent() {
-    var node = document.getElementById("recent");
-
-    while (node.hasChildNodes()) {
-        node.removeChild(node.lastChild);
-    }
-
-    chrome.storage.sync.get(null, function(items) {
-      console.log(items);
-      var sortable = [];
-      for (var kaomoji in items) {
-          sortable.push([kaomoji, items[kaomoji]]);
-      }
-
-      sortable.sort(function(a, b) {
-          return b[1] - a[1];
-      });
-
-      console.log(sortable);
-
-      for (var j = 0; j < sortable.length; j++) {
-          var kaomoji = sortable[j]["0"];
-          var kaomojiID = kaomoji;
-          appendTextOntoDoc("recent", kaomoji, kaomojiID);
-      }
-
-      var kaomojiClasses = document.getElementsByClassName('kaomoji');
-      for (var i = 0; i < kaomojiClasses.length; i++) {
-          kaomojiClasses[i].addEventListener('click', handleClick, false);
-      };
+    applyStoredFilters(function () {
+      renderRecent();
+      renderFavorites();
     });
-  }
-
-  function handleClick(e) {
-    updateRecent();
-    copyTextToClipboard(e);
-
-    var text = document.getElementById(e.target.id);
-    kaomojiFace = text.innerText;
-
-    chrome.storage.sync.get(kaomojiFace, function(items){
-        console.log(items);
-        if (jQuery.isEmptyObject(items)) {
-            console.log("not in yet");
-            var addToTable = {};
-            addToTable[kaomojiFace] = 1;
-            chrome.storage.sync.set(addToTable, function() {
-                console.log("success");
-            });
-        } else {
-            console.log("it exists");
-            var count = items[kaomojiFace];
-            var addToTable = {};
-            addToTable[kaomojiFace] = count + 1;
-            chrome.storage.sync.set(addToTable, function() {
-                console.log("success");
-            });
-        }
-    });
-  }
-
-  function copyTextToClipboard(e) {
-    var text = document.getElementById(e.target.id);
-    text = text.innerText;
-    console.log(text);
-
-    var copyFrom = document.createElement("textarea");
-    copyFrom.textContent = text;
-    var body = document.getElementsByTagName('body')[0];
-    body.appendChild(copyFrom);
-    copyFrom.select();
-    document.execCommand('copy');
-    body.removeChild(copyFrom);
-    tempAlert("✓");
-  }
+  });
 });
 
-function appendTextOntoDoc(elementId, text, textID) {
-  var source = document.getElementById(elementId);
-  var pNode = document.createElement("div");
-  var textNode = document.createTextNode(text);
-  pNode.appendChild(textNode);
-  pNode.setAttribute("id", textID);
-  pNode.setAttribute("class", "kaomoji");
-  source.appendChild(pNode);
+// ---- rendering -------------------------------------------------------------
+
+function isFavorite(text) {
+  return favorites.indexOf(text) !== -1;
 }
 
-function tempAlert(msg) {
-  var el = document.createElement("div");
-  el.setAttribute("class", "alert");
-  el.setAttribute("id", "alert");
-  el.innerHTML = msg;
+function makeKaomoji(text) {
+  var d = document.createElement('div');
+  d.className = 'kaomoji' + (isFavorite(text) ? ' favorited' : '');
+  d.setAttribute('data-k', text);
+  d.appendChild(document.createTextNode(text));
+
+  // A small heart in the corner: click to favorite (the cell copies otherwise).
+  var heart = document.createElement('span');
+  heart.className = 'fav-heart';
+  heart.setAttribute('aria-hidden', 'true');
+  d.appendChild(heart);
+
+  return d;
+}
+
+function buildSections() {
+  var all = document.getElementById('all');
+  CATEGORIES.forEach(function (cat) {
+    var list = (typeof KAOMOJI !== 'undefined' && KAOMOJI[cat]) ? KAOMOJI[cat] : [];
+
+    var block = document.createElement('div');
+    block.className = 'cat-block';
+    block.setAttribute('data-category', cat);
+
+    var label = document.createElement('div');
+    label.className = 'cat-label';
+    label.textContent = cat;
+    block.appendChild(label);
+
+    var section = document.createElement('div');
+    section.className = 'section';
+    list.forEach(function (k) { section.appendChild(makeKaomoji(k)); });
+    block.appendChild(section);
+
+    all.appendChild(block);
+  });
+}
+
+// "Frequently used" = a blend: the most-recent few, then filled with the
+// most-used-by-count, deduped, capped at RECENT_LIMIT.
+function renderRecent() {
+  chrome.storage.sync.get(null, function (items) {
+    items = items || {};
+    var order = Array.isArray(items[RECENT_ORDER_KEY]) ? items[RECENT_ORDER_KEY] : [];
+    var freq = Object.keys(items)
+      .filter(function (k) { return typeof items[k] === 'number'; })
+      .sort(function (a, b) { return items[b] - items[a]; });
+
+    var list = [];
+    var seen = {};
+    var i;
+    var freqLead = RECENT_LIMIT - RECENT_TAIL; // most-used shown first
+    // 1) lead with the most-used, reserving the last slots for recent picks
+    for (i = 0; i < freq.length && list.length < freqLead; i++) {
+      if (!seen[freq[i]]) { seen[freq[i]] = 1; list.push(freq[i]); }
+    }
+    // 2) then the most-recently-used that aren't already shown
+    for (i = 0; i < order.length && list.length < RECENT_LIMIT; i++) {
+      if (!seen[order[i]]) { seen[order[i]] = 1; list.push(order[i]); }
+    }
+    // 3) if recency was short, backfill with more of the most-used
+    for (i = 0; i < freq.length && list.length < RECENT_LIMIT; i++) {
+      if (!seen[freq[i]]) { seen[freq[i]] = 1; list.push(freq[i]); }
+    }
+
+    var recent = document.getElementById('recent');
+    recent.textContent = '';
+    list.forEach(function (k) { recent.appendChild(makeKaomoji(k)); });
+    document.getElementById('recent-wrap').hidden = list.length === 0;
+  });
+}
+
+function renderFavorites() {
+  var fav = document.getElementById('favorites');
+  fav.textContent = '';
+  favorites.forEach(function (k) { fav.appendChild(makeKaomoji(k)); });
+  document.getElementById('fav-wrap').hidden = favorites.length === 0;
+}
+
+// ---- clicking a kaomoji ----------------------------------------------------
+
+function onKaomojiClick(e) {
+  var cell = e.target.closest ? e.target.closest('.kaomoji') : null;
+  if (!cell) return;
+  var text = cell.getAttribute('data-k');
+
+  if (e.target.closest('.fav-heart')) {
+    toggleFavorite(text);
+    return;
+  }
+  copyAndRecord(text);
+}
+
+function copyAndRecord(text) {
+  navigator.clipboard.writeText(text).then(showCheck, function (err) {
+    console.warn('kaomojiBoard: could not copy to clipboard -', err);
+  });
+
+  // Increment the count and move this kaomoji to the front of the recency list,
+  // then re-render the frequently-used strip once saved.
+  chrome.storage.sync.get([text, RECENT_ORDER_KEY], function (items) {
+    var count = (items && typeof items[text] === 'number') ? items[text] : 0;
+    var order = (items && Array.isArray(items[RECENT_ORDER_KEY])) ? items[RECENT_ORDER_KEY] : [];
+    order = order.filter(function (k) { return k !== text; });
+    order.unshift(text);
+    if (order.length > RECENT_ORDER_MAX) order = order.slice(0, RECENT_ORDER_MAX);
+
+    var rec = {};
+    rec[text] = count + 1;
+    rec[RECENT_ORDER_KEY] = order;
+    chrome.storage.sync.set(rec, function () {
+      if (chrome.runtime.lastError) {
+        console.warn('kaomojiBoard: could not save recent -', chrome.runtime.lastError.message);
+      }
+      renderRecent();
+    });
+  });
+}
+
+function toggleFavorite(text) {
+  var idx = favorites.indexOf(text);
+  if (idx === -1) favorites.unshift(text); // newest favorite first
+  else favorites.splice(idx, 1);
+
+  var obj = {};
+  obj[FAV_KEY] = favorites;
+  chrome.storage.sync.set(obj, function () {
+    if (chrome.runtime.lastError) {
+      console.warn('kaomojiBoard: could not save favorites -', chrome.runtime.lastError.message);
+    }
+  });
+
+  markFavorited(text, isFavorite(text));
+  renderFavorites();
+}
+
+// Toggle the favorited class on every cell showing this kaomoji (it can appear
+// in a category, in frequently-used, and in favorites at once).
+function markFavorited(text, on) {
+  var cells = document.getElementsByClassName('kaomoji');
+  for (var i = 0; i < cells.length; i++) {
+    if (cells[i].getAttribute('data-k') === text) {
+      cells[i].classList.toggle('favorited', on);
+    }
+  }
+}
+
+function showCheck() {
+  var el = document.createElement('div');
+  el.className = 'alert';
+  el.textContent = '✓';
+  el.addEventListener('animationend', function () { el.remove(); });
   document.body.appendChild(el);
-  $(el).fadeOut(1750, function() { $(this).remove(); });
 }
 
+// ---- filter pills ----------------------------------------------------------
 
-var kaomojiJSON = {
-  "angry": [
-    "( ≧Д≦)",
-    "o(-`д´- ｡)",
-    "((╬ಠิ﹏ಠิ))",
-    "(；￣ Д ￣）",
-    "ಠ_ರೃ",
-    "(」゜ロ゜)」",
-    "(;¬_¬)",
-    "凸(｀0´)凸",
-    "(*｀へ´*)",
-    "（；¬＿¬)",
-    "-`д´-",
-    "(*≧m≦*)",
-    "(｡+･`ω･´)",
-    "｡゜(｀Д´)゜｡",
-    "(/ﾟДﾟ)/",
-    "(*￣m￣)",
-    "( •̀ω•́ )σ",
-    "(＃｀д´)ﾉ",
-    "(>人<)",
-    "( ꒪Д꒪)ノ",
-    "(#ಠQಠ#)",
-    "(¬_¬)",
-    "(　ﾟДﾟ)＜!!",
-    "(‡▼益▼)",
-    "(¬､¬)",
-    "( ಠ ಠ )",
-    "(´･益･｀*)",
-    "(¬▂¬)",
-    "(･｀ｪ´･)つ",
-    "(´Д｀)",
-    "(⋋▂⋌)",
-    "(,,#ﾟДﾟ)",
-    "(҂⌣̀_⌣́)",
-    "＼(｀0´)／",
-    "(； ｀ｪ´ ；)b三b",
-    "(>_<)",
-    "ヽ(｀⌒´メ)ノ",
-    "(；¬д¬)",
-    "（＞д＜）",
-    "ヽ(●-`Д´-)ノ",
-    "（;≧皿≦）",
-    "(¬д¬。)",
-    "ヽ༼ ಠ益ಠ ༽ﾉ",
-    "(((p(>o<)q)))",
-    "（≧▼≦；)",
-    "(≧σ≦)",
-    "(◣_◢)",
-    "(ᇂ∀ᇂ╬)",
-    "(╬ﾟ◥益◤ﾟ)",
-    "(ू˃̣̣̣̣̣̣︿˂̣̣̣̣̣̣ ू)",
-    "(ノ≧┏Д┓≦)ノ",
-    "(╬⓪益⓪)",
-    "(ू˃̣̣̣̣̣̣o˂̣̣̣̣̣̣ ू)⁼³₌₃",
-    "(ノಠ ∩ಠ)ノ彡( o°o)",
-    "(╯°□°）╯︵ ┻━┻",
-    "凸ಠ益ಠ)凸",
-    "(ノಠ益ಠ)ノ",
-    "(╯°Д°）╯︵/(.□ . )",
-    "凸(⊙▂⊙✖ )",
-    "(ノಠ益ಠ)ノ彡┻━┻",
-    "（▼へ▼メ）",
-    "(ಠ⌣ಠ)",
-    "[○･｀Д´･○]",
-    "(◞≼◉ื≽◟ ;益;◞≼◉ื≽◟)",
-    "(ಥ⌣ಥ)",
-    "{{|└(>o< )┘|}}",
-    "｢(#Φ益 Φo)∩",
-    "＼(・｀(ｪ)・)/",
-    "＼(〇O〇)／",
-    "/( .□.) ︵╰(゜益゜)╯︵ /(.□. /)",
-    "＼(＠O＠)／",
-    "┌П┐(►˛◄’!)",
-    "( #`⌂´)/┌┛",
-    "＼(`O´θ／",
-    "╭(๑¯д¯๑)╮",
-    "＼( ｀.∀´)／",
-    "＼(>o<)ノ",
-    "ヾ( ･`⌓´･)ﾉﾞ",
-    "ヾ(。◣∀◢。)ﾉ",
-    "ヽ(≧Д≦)ノ",
-    "o(≧o≦)o",
-    "ヽ(#`Д´)ﾉ",
-    "ヽ(ｏ`皿′ｏ)ﾉ",
-    "ŎUŎ",
-    "ヽ(#ﾟДﾟ)ﾉ┌┛",
-    "٩(╬ʘ益ʘ╬)۶",
-    "s(・｀ヘ´・；)",
-    "ヽ(#ﾟДﾟ)ﾉ┌┛Σ(ノ´Д`)ノ",
-    "٩(๑`ȏ´๑)۶",
-    "s(・｀ヘ´・;)ゞ",
-    "ヽ(｀◇´)/",
-    "ｏ( ><)o",
-    "θ＼(；￢_￢)",
-    "ヽ(￣д￣;)ノ",
-    "o(>< )o",
-    "Σ(-`Д´-ﾉ；)ﾉ",
-    "Σ(▼□▼メ)",
-    "щ(ºДºщ)",
-    "щ(ಠ益ಠщ)",
-    "щ(ಥДಥщ)",
-    "ლ (#｀ﾛ＾;)>",
-    "ლ(ಠ_ಠლ)",
-    "ლ(ಠ益ಠ)ლ",
-    "ლ(ಠ益ಠლ",
-    "ლಠ益ಠ)ლ",
-    "ಠ_ಠ",
-    "ಠ▃ಠ",
-    "ಥ⌣ಥ",
-    "ᕙ(⇀‸↼‶)ᕗ",
-    "ᕦ(ò_óˇ)ᕤ",
-    "눈_눈",
-    "凸(-0-メ)",
-    "凸(｀⌒´メ)凸",
-    "凸(｀△´＋）",
-    "☜(:♛ฺ;益;♛ฺ;)☞",
-    "૮( ᵒ̌▱๋ᵒ̌ )ა",
-    "(⁎˃ᆺ˂)",
-    "(⁎ૢ⚈ै೧⚈ै⁎ૢ)",
-    "໒(•න꒶̭න•)७",
-    "(ᗒᗣᗕ)՞"
-  ],
-  "sad": [
-    "(｡•́︿•̀｡)",
-    "(o╭╮o)",
-    "⊙︿⊙",
-    "ᵟຶᴖ ᵟຶ",
-    "●︿●",
-    "(٭°̧̧̧꒳°̧̧̧٭)",
-    "( ´•̥̥̥ω•̥̥̥` )",
-    "(ᵕ̣̣̣̣̣̣﹏ᵕ̣̣̣̣̣̣)",
-    "( ͒˃̩̩⌂˂̩̩ ͒)",
-    "°(ಗдಗ。)°.",
-    "｡･ﾟ(ﾟ⊃ω⊂ﾟ)ﾟ･｡",
-    "｡:ﾟ(;´∩`;)ﾟ:｡",
-    "(′︿‵｡)",
-    "(´-﹏-`；)",
-    "•(◐﹏◐)•",
-    "(๑ó⌓ò๑)",
-    "(●´⌓`●)",
-    "( •᷄⌓•᷅ )",
-    "(◕⌓◕;)",
-    "ಠ╭╮ಠ",
-    "(;*△*;)",
-    "(٭°̧̧̧꒳°̧̧̧٭)",
-    "( ͒˃̩̩⌂˂̩̩ ͒)",
-    "・゜・(ノД`)",
-    ".·´¯`(>▂<)´¯`·.",
-    "˚‧º·(˚ ˃̣̣̥᷄⌓˂̣̣̥᷅ )‧º·˚",
-    "｡･ﾟ(ﾟ⊃ω⊂ﾟ)ﾟ･｡",
-    "｡･ﾟﾟ･(>д<)･ﾟﾟ･｡",
-    "o(╥﹏╥)o",
-    "(⁎•̛̣̣꒶̯•̛̣̣⁎)",
-    "(๑ ⁍̥̥̥᷅ ᴈ⁍̥̥̥᷅)人(⁌̥̥̥᷄ε ⁌̥̥̥᷄ ๑)ｰ",
-    "(´°̥̥̥̥̥̥̥̥ω°̥̥̥̥̥̥̥̥｀)",
-    "(´•̥̥̥д•̥̥̥`̀ू๑)",
-    "ヾ( •́д•̀ ;)ﾉ",
-    "ヽ ( ꒪д꒪ )ﾉ",
-    "゛(●ﾉ´・Д・｀)ﾉ",
-    ",､’`( ꒪Д꒪),､’`’`,､",
-    "ｍ（＿　＿；；ｍ",
-    "_:(´□`」 ∠):_",
-    "(シ_ _)シ",
-    "（ﾉ´д｀）",
-    "<(_ _)>",
-    "＜(。_。)＞",
-    "m(_ _)m",
-    "m(._.)m",
-    "ｍ（．＿．）ｍ",
-    "m(￢0￢)m",
-    "( .. )",
-    "๑•́ㅿ•̀๑) ᔆᵒʳʳᵞ",
-    "ｍ（｡≧ _ ≦｡）ｍ",
-    "ｍ(｡≧Д≦｡)ｍ",
-    "m(@´ё｀@)m",
-    "m(*- -*)m",
-    "･ﾟ･(〃´∩｀p◇SΟЯЯΥ◆q´∩｀〃)･ﾟ･",
-    "･ﾟ･δояяу･ﾟ･(○ﾉдﾉ)",
-    "o(_ _)o"
-  ],
-  "animals": [
-    "“(`(エ)´)ノ",
-    "(/-(ｴ)-＼)",
-    "(｀(エ)´)ﾉ",
-    "(´(エ)｀)",
-    "(✪㉨✪)",
-    "(ó㉨ò)",
-    "・㉨・",
-    "( (ﾐ´ω`ﾐ))",
-    "( ´ิ(ꈊ) ´ิ)",
-    "(｡･ω･｡)",
-    "(*￣(ｴ)￣*)",
-    "(*ノ・ω・）",
-    "(／(ｴ)＼)",
-    "(／￣(ｴ)￣)／",
-    "(^(I)^)",
-    "(^(エ)^)",
-    "(￣(エ)￣)",
-    "(￣(エ)￣)ゞ",
-    "(￣(ｴ)￣)ﾉ",
-    "(∪￣ ㋓ ￣∪)",
-    "(●｀･(ｴ)･´●)",
-    "(●￣(ｴ)￣●)",
-    "(♥ó㉨ò)ﾉ♡",
-    "(✪㉨✪)",
-    "《/(￣(ｴ)￣)ゞ》",
-    "＼(・｀(ｪ)・)/",
-    "°◦=͟͟͞͞ʕ̡̢̡ु•̫͡•ʔ̡̢̡ु ☏",
-    "⊂(・(ェ)・)⊃",
-    "⊂(^(工)^)⊃",
-    "⊂(￣(ｴ)￣)⊃",
-    "⊂(￣(工)￣)⊃",
-    "⊂(◎(工)◎)⊃",
-    "ʕ̡̢̡̡̢̡̡̢̡✩˃̶͈̀ ॢ³˂̴`͈ॢʔ̢̡̢̢̡̢̢̡̢♡⃛",
-    "ʕ̡̢̡̡̢̡̡̢♡ᵒ̴̷͈艸ᵒ̴̷͈॰ʔ̢̡̢̢̡̢̢̡̢✧",
-    "✧ʕ̢̣̣̣̣̩̩̩̩·͡˔·ོɁ̡̣̣̣̣̩̩̩̩✧",
-    "ヾ(T(エ)Tヽ)",
-    "٩ʕ•͡×•ʔ۶",
-    "ヽ(￣(ｴ)￣)ﾉ",
-    "v.ʕʘ‿ʘʔ.v",
-    "ʔ•̫͡•ʔ",
-    "ʕ ⁎❛ั ुꈊ͒ੁ❛ั ु)",
-    "ʕ •́؈•̀ ₎",
-    "ʕ·͡ˑ·ཻʔ",
-    "ʕ”̮ुॽु✚⃞ྉ*✲ﾟ*｡⋆",
-    "ʕ̡̢̡*✪௰✪ૢʔ̢̡̢",
-    "ʕ•͡-•ʔ",
-    "ʕ•͓͡•ʔ-̫͡-ʕ•̫͡•ʔ",
-    "ʕ•̫͡•ʔ♡*:.✧",
-    "ʕ•̫͡•ིʔྀ",
-    "ʕ•͡ɛ•͡ʼʼʔ",
-    "ʕ•͡ω•ʔ",
-    "ʕ•̀ω•́ʔ✧",
-    "ʕ•ӫ̫͡•ʔ",
-    "ʕ•͡દ•ʔ",
-    "ʕง•ᴥ•ʔง",
-    "ヾ(;￫㉨￩)ﾉ",
-    "ヾ(´(ｴ)｀ﾉﾞ",
-    "ʕʽɞʼʔ",
-    "ʕʘ̅͜ʘ̅ʔ",
-    "ʕु-̫͡-ʔु”",
-    "ʕु•̫͡•ʔु ✧",
-    "ʕु•̫͡•ʔु☂",
-    "ʢٛ•ꇵٛ•ʡ",
-    "Ψ(￣(ｴ)￣)Ψ",
-    "ก็็็็็็็็็็็็็ʕ•͡ᴥ•ʔ ก้้้้้้้้้้้",
-    "ฅʕ•̫͡•ʔฅ",
-    "川´･ω･`川",
-    "┏((＝￣(ｴ)￣=))┛",
-    "⊂(ο･㉨･ο)⊃",
-    "ᶘ ᵒᴥᵒᶅ",
-    "ʕ•̫͡•ʔ♬✧",
-    "ʕ•ᴥ•ʔ",
-    "ʕ•͡౪•ʔ",
-    "ᵋ₍⚬ɷ⚬₎ᵌ",
-    "ˁ˙͡˟˙ˀ",
-    "✧(๑•́ᄌ⃝ก̀๑)⋆*ೃ:.",
-    "ʕ•̫͡•ʕ*̫͡*ʕ•͓͡•ʔ-̫͡-ʕ•̫͡•ʔ*̫͡*ʔ",
-    "( ͒•ㅈ• ͒)",
-    "(´ᄌ⃝`๑)",
-    "｡•ﻌ•｡ฅ ✩",
-    "✧.*◌̗·͡˔·ོᵔ̩̩͔·͡˔·◌̖*·✧",
-    "ʕథ౪థʔ",
-    "ʕ￫ᴥ￩ʔ",
-    "ʕ•̫๑͡•ʔ∣ժ̅ʒ∾ෆ⃛",
-    "ʕ•༘͡.•ʔ",
-    "ʕ͙•̫͑͡•ʔͦʕͮ•̫ͤ͡•ʔ͙",
-    "ʕ·͡ˑ·ཻʔෆ⃛ʕ•̫͡•ོʔ",
-    "=͟͟͞͞•̫͡•ʔ",
-    "ʕ•ི̮͡•ྀʕ•̹͡-ʔ•ི̬͡•ྀʔ",
-    "（・⊝・）",
-    "（・⊝・∞）",
-    "（・θ・）",
-    "（＠◇＠）",
-    "(•∋•)",
-    "（`･⊝･´ ）",
-    "(`･⊝･´)",
-    "(｀Θ´)",
-    "(°<°)",
-    "（ﾟ∈ﾟ）",
-    "(◉Θ◉)",
-    "(●∈∋●)",
-    "⊹⋛⋋( ՞ਊ ՞)⋌⋚⊹",
-    "◎▼◎",
-    " ˏ₍•ɞ•₎ˎ",
-    "ˎ₍•ʚ•₎ˏ",
-    "♡(㋭ ਊ ㋲)♡",
-    "꜀( ˊ̠˂˃ˋ̠ )꜆",
-    "ꉂ (๑¯ਊ¯)σ",
-    "(•ө•)",
-    "(｡･ө･｡)",
-    "(￣･Θ･￣)",
-    "♩є(･Θ･｡)э",
-    "ㄟ( ･ө･ )ㄏ",
-    "є(･Θ･｡)э››",
-    "♫ꉂ (๑¯ਊ¯)σ",
-    "_:(‘Θ’ 」 ∠):_",
-    "(⁰▿⁰三⁰▿⁰ ‧̣̥̇)",
-    "o(ŎㅿŎ o≡o ŎㅿŎ)o",
-    "ヾ(*ㅿ*๑)ﾂ",
-    "ヾ(๑ ³ㅿ³)ﾉ",
-    "（ꉺ▿ꉺ）",
-    "ლ(⁰⊖⁰ლ)",
-    "ლ(◉◞⊖◟◉｀ლ)",
-    "( ˙Θ˙(˙Θ˙)˙Θ˙ )",
-    "（´◉◞⊖◟◉｀）",
-    "( ˘⊖˘)",
-    "(灬㋭ ਊ ㋲灬)",
-    "( ˊ̱˂˃ˋ̱ )◞⸜₍ ˍ́˱˲ˍ̀ ₎⸝◟( ˊ̱˂˃ˋ̱ )",
-    "ξ(｡◕ˇ◊ˇ◕｡)ξ",
-    "━=͟͟͞͞(Ŏ◊Ŏ ‧̣̥̇)━",
-    "(ฅˊ̱˂˃ˋ̱ฅ)♪",
-    "＜(´ ՞)ਊ( ՞ )＞",
-    "⸜₍๑•⌔•๑ ₎⸝",
-    "(๑ŏ⋖⋗ŏ)",
-    "⋛⋋( ‘Θ’)⋌⋚",
-    "(•͈⌔•͈⑅)",
-    "(ּ⌔̀௰ּ⌔́)",
-    "(ꀹʚ ꀹ)",
-    "˂⁽ˈ₍ ⁾˲₎₌",
-    "ʚ(ȉˬȉ⁎)ɞ˒˒",
-    "⚈̤꒫⚈̤",
-    "(∘❛ั⌔❛ั∘)",
-    "๏ ⌔̮ ๏",
-    "⋆ඹ͈⌔ඹ͈⋆",
-    "ʚ(•”̮•)ɞ",
-    "(○∇○)",
-    "(･Θ･)",
-    "ϵ( ‘Θ’ )϶",
-    "(･Θ･;)",
-    "( ˊ̱˂˃ˋ̱ )",
-    "˱(ْ۬ ˂̵ْ۬ )˲",
-    "(ʾ̌ˆʿ̌)",
-    "(⁽ؔ˙⁾⊝⁽ؔ˙⁾)",
-    "ε(*´･∀･)з",
-    "˳⚆ɞ⚆˳",
-    "୯ૃ(⁎⁾̵ ਊ ⁽̵)੭ુ⁼³₌₃",
-    "（´≝◞⊖◟≝｀)",
-    "o(｀Θ´)○",
-    "(ؔᶿ̷⌔ؔᶿ̷)",
-    "(^._.^)ﾉ",
-    "(^人^)",
-    "(=；ェ；=)",
-    "(=｀ω´=)",
-    "(=｀ェ´=)",
-    "（=´∇｀=）",
-    "(=^･^=)",
-    "(=^･ｪ･^=)",
-    "(=^‥^=)",
-    "(=ＴェＴ=)",
-    "(=ｘェｘ=)",
-    "(=ΦｴΦ=)",
-    "(ΦωΦ)",
-    "(Ф∀Ф)",
-    "(ФДФ)",
-    "(ㅇㅅㅇ❀)",
-    "（三ФÅФ三）",
-    "＼(=^‥^)/’`",
-    "<(*ΦωΦ*)>",
-    "|ΦωΦ|",
-    "~(=^‥^)/",
-    "~(=^‥^)ノ",
-    "└(=^‥^=)┐",
-    "ヾ(*ΦωΦ)ﾉ",
-    "ヾ(=ﾟ･ﾟ=)ﾉ",
-    "ヽ(=^･ω･^=)丿",
-    "٩(ↀДↀ)۶",
-    "d(=^･ω･^=)b",
-    "o(^・x・^)o",
-    "V(=^･ω･^=)v",
-    "ㅇㅅㅇ",
-    "ミ๏ｖ๏彡",
-    "((≡^⚲͜^≡))",
-    "(⁎˃ᆺ˂)",
-    "(,,◕　⋏　◕,,)",
-    "(*✧×✧*)",
-    "] ‘͇̂•̩̫’͇̂ ͒)ฅ ﾆｬ❣",
-    "(ٛ₌டுͩ ˑ̭ டுͩٛ₌)ฅ",
-    "‘`ﾛｰヽ(⊡ㅂ⊡｡ Ξ ｡⊡ㅂ⊡)ﾉ ‘`ﾛｰ",
-    "₍˄·͈༝·͈˄₎◞ ̑̑ෆ⃛",
-    "₍˄·͈༝·͈˄₎ฅ˒˒",
-    "₍˄ุ.͡˳̫.˄ุ₎ฅ˒˒",
-    "✩⃛( ͒ ु•·̫• ू ͒)",
-    "( ͒ ु- •̫̮ – ू ͒)",
-    "ฅ(⌯͒• ɪ •⌯͒)ฅ❣",
-    "ฅ⃛(⌯͒꒪ั ˑ̫ ꒪ั ⌯͒) ﾆｬｯ❣",
-    "(ะ☫ω☫ะ)",
-    "(ꀄꀾꀄ)",
-    "(ะ`♔´ะ)",
-    "(ٛ⁎꒪̕ॢ ˙̫ ꒪ٛ̕ॢ⁎)",
-    "( ͒ ˘̩̩̩̩̩̩ꇵ͒˘̩̩̩̩̩̩ ͒)",
-    "ฅ ̂⋒ิ ˑ̫ ⋒ิ ̂ฅ",
-    "(≚ᄌ≚)ƶƵ",
-    "(≚ᄌ≚)ℒℴѵℯ❤",
-    "(✦థ ｪ థ)",
-    "(ↀДↀ)✧",
-    "(ↀДↀ)",
-    "(ↀДↀ)⁼³₌₃",
-    "(=ↀωↀ=)✧",
-    "(●ↀωↀ●)✧",
-    "(๑ↀᆺↀ๑)✧",
-    "(=ↀωↀ=)",
-    "(●ↀωↀ●)",
-    "(๑ↀᆺↀ๑)☄"
-  ],
-  "happy": [
-    "ᕕ( ᐛ )ᕗ",
-    "(*^▽^*)",
-    "(ノ￣▽￣)ノ",
-    " ´ ▽ ` )b",
-    "(●⌒∇⌒●)",
-    "°˖✧◝(⁰▿⁰)◜✧˖°",
-    "∩(︶▽︶)∩",
-    "೭੧(❛▿❛✿)੭೨",
-    "(ノ・∀・)ノ",
-    "(*´･∀･)",
-    "੭व(๑• .̫ •๑) ✧",
-    "((⚆·̫⚆‧̣̥̇ ))",
-    "( •⌄• ू )✧",
-    "♡✧( ु•⌄• )",
-    "(｡･ω･｡)",
-    "（　＾ω＾）",
-    "( ⋂‿⋂’)",
-    "(◡‿◡✿)",
-    "(◕‿◕✿)",
-    "(✿◠‿◠)",
-    "(๑✧◡✧๑)",
-    "(๑•͈ᴗ•͈)",
-    "⊂(◉‿◉)つ",
-    "(ㆁᴗㆁ✿)",
-    "／人◕ ‿‿ ◕人＼",
-    "(ᗒᗨᗕ)",
-    "(´◉◞౪◟◉｀)",
-    "(*＾ワ＾*)",
-    "(((o(*ﾟ▽ﾟ*)o)))",
-    "o((*^▽^*))o",
-    "Ｏ(≧▽≦)Ｏ",
-    "o(〃＾▽＾〃)o",
-    "σ(≧ε≦ｏ)",
-    "o(≧∇≦o)",
-    "⌒°(❛ᴗ❛)°⌒",
-    "《《o(≧◇≦)o》》",
-    "ლ(́◉◞౪◟◉‵ლ)",
-    "ლ(๏‿๏ ◝ლ)",
-    "˓˓(๑ॢ₎ӧ ͜ ӧ₍๑ॢ)˒˒",
-    "〜(￣▽￣〜)",
-    "o(*≧□≦)o",
-    "(ﾉ´ヮ´)ﾉ*:･ﾟ✧",
-    "(ﾉ^ヮ^)ﾉ*:・ﾟ✧",
-    "˭̡̞(◞⁎˃ᆺ˂)◞*✰",
-    "ヾ(｡･ω･)ｼ",
-    "ヾ（〃＾∇＾）ﾉ♪",
-    "⤴︎ ε=ε=(ง ˃̶͈̀ᗨ˂̶͈́)۶ ⤴︎",
-    "୧༼✿ ͡◕ д ◕͡ ༽୨",
-    ".+:｡(ﾉ･ω･)ﾉﾞ",
-    "⁽(◍˃̵͈̑ᴗ˂̵͈̑)⁽",
-    "ヽ(´ω｀○)ﾉ.+ﾟ*｡:ﾟ+",
-    "ヾ(０∀０*★)ﾟ*･.｡",
-    "ヾ（＠＾▽＾＠）ノ",
-    "ヾ(*Őฺ∀Őฺ*)ﾉ",
-    "╰(◉ᾥ◉)╯",
-    "✧⁺⸜(●′▾‵●)⸝⁺✧",
-    "*。ヾ(｡>ｖ<｡)ﾉﾞ*。",
-    "ヾ(o✪‿✪o)ｼ",
-    "｡;+*(★`∪´☆)*+;｡",
-    "（๑✧∀✧๑）",
-    "⁽⁽٩(๑˃̶͈̀ ᗨ ˂̶͈́)۶⁾⁾",
-    "٩(♡ε♡ )۶",
-    "٩(θ‿θ)۶",
-    "୧( , ＾  ＾ , )୨",
-    "٩(๑❛ᴗ❛๑)۶",
-    "✧(๑✪д✪)۶ㅂ٩(✪д✪๑)✧",
-    "꒳ᵃ꒳ᵃ꒳ᵃ~(๑°ᗨૢ°๑)♡ӵᵉ੨ᑋ✧",
-    "ლ(*꒪ヮ꒪*)ლ",
-    "*✲ﾟ*｡✧٩(･ิᴗ･ิ๑)۶*✲ﾟ*｡✧",
-    "ﾟ･✿ヾ╲(｡◕‿◕｡)╱✿･ﾟ",
-    "☆*･゜ﾟ･*(^O^)/*･゜ﾟ･*☆",
-    "☆*:.｡. o(≧▽≦)o .｡.:*☆",
-    "｡:.ﾟヽ(´∀`｡)ﾉﾟ.:｡+ﾟ"
-  ],
-  "funny": [
-    " ¯\\_(ツ)_/¯",
-    "ʅ(°_°)ʃ",
-    "┐(°‿°)┌",
-    "¯\_( ´･ω･)_/¯",
-    "乁(ツ)ㄏ",
-    " ¯\\(ツ)/¯",
-    "ヽ༼ຈل͜ຈ༽ﾉ",
-    "ಥ_ಥ",
-    "ಠ_ಠ",
-    "ヽ༼◉ل͜◉༽ﾉ",
-    "ヽ༼ ♥ ل͜ ♥ ༽ﾉ",
-    "✺◟༼ຈ ل͜ ຈ༽◞✺",
-    "ヽ༼ ͠° ͟ ͜ʖ ͡° ༽ﾉ",
-    "(╯°□°）╯︵ ┻━┻",
-    "(ノಠ益ಠ)ノ彡┻━┻",
-    "(┛ಠДಠ)┛彡┻━┻",
-    "(ﾉ＾◡＾)ﾉ︵ ┻━┻",
-    "┻━┻ ︵ヽ(`Д´)ﾉ︵ ┻━┻",
-    "┬──┬◡ﾉ(° -°ﾉ)",
-    "┬─┬ノ(ಠ_ಠノ)",
-    "(ヘ･_･)ヘ┳━┳",
-    "(╯°Д°）╯︵/(.□ . )",
-    "(╯°□°）╯︵ /( ‿⌓‿ )\\",
-    "( ͡° ͜ʖ ͡°)",
-    "ᕦ( ͡° ͜ʖ ͡°)ᕤ",
-    "( ͡☉ ͜ʖ ͡☉)",
-    "(☞ ͡° ͜ʖ ͡°)☞",
-    "(´༎ຶ ͜ʖ ༎ຶ `)♡",
-    "	° ͜ʖ ͡ –	✧",
-    "( ͡~ ͜ʖ ͡°)",
-    "[̲̅$̲̅(̲̅ ͡° ͜ʖ ͡°̲̅)̲̅$̲̅]",
-    "*:..｡o○( ͡° ͜ʖ ͡°)○o｡..:*",
-    "( ͡° ͜ʖ ͡°)━☆ﾟ.*･｡ﾟ",
-    "︵‿︵(´ ͡༎ຶ ͜ʖ ͡༎ຶ `)︵‿︵",
-    "✺◟( ͡° ͜ʖ ͡°)◞✺",
-    "✧･ﾟ: *✧･ﾟ:*( ͡ᵔ ͜ʖ ͡ᵔ )*:･ﾟ✧*:･ﾟ✧",
-    "（╯°□°）╯︵ ( ͜。 ͡ʖ ͜。) ",
-    "(╭ರ_⊙)",
-    "ᕙ〳 ರ ︿ ರೃ 〵ᕗ",
-    "╰〳˵ ✖ Д ✖ ˵〵⊃━☆ﾟ.*･｡ﾟ"
-  ]}
+function onPillClick(e) {
+  var pill = e.target.closest ? e.target.closest('.pill') : null;
+  if (!pill) return;
+  var on = pill.getAttribute('aria-pressed') !== 'true';
+  setPill(pill, on);
+  applyFilter(pill.getAttribute('data-category'), on);
+  saveFilters();
+}
+
+function setPill(pill, on) {
+  pill.setAttribute('aria-pressed', on ? 'true' : 'false');
+  pill.classList.toggle('active', on);
+}
+
+function applyFilter(cat, on) {
+  var block = document.querySelector('.cat-block[data-category="' + cat + '"]');
+  if (block) block.classList.toggle('hidden', !on);
+}
+
+function saveFilters() {
+  var active = [];
+  var pills = document.querySelectorAll('.pill');
+  for (var i = 0; i < pills.length; i++) {
+    if (pills[i].getAttribute('aria-pressed') === 'true') {
+      active.push(pills[i].getAttribute('data-category'));
+    }
+  }
+  chrome.storage.local.set({ activeCategories: active });
+}
+
+function applyStoredFilters(done) {
+  chrome.storage.local.get('activeCategories', function (data) {
+    var active = (data && Array.isArray(data.activeCategories)) ? data.activeCategories : null;
+    if (active) { // no saved preference: leave all pills on (the default)
+      var pills = document.querySelectorAll('.pill');
+      for (var i = 0; i < pills.length; i++) {
+        var cat = pills[i].getAttribute('data-category');
+        var on = active.indexOf(cat) !== -1;
+        setPill(pills[i], on);
+        applyFilter(cat, on);
+      }
+    }
+    if (done) done();
+  });
+}
+
+// ---- settings menu (gear) --------------------------------------------------
+
+function setupSettingsMenu() {
+  var btn = document.getElementById('settings-btn');
+  var menu = document.getElementById('settings-menu');
+
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    menu.hidden = !menu.hidden;
+    disarmAll();
+  });
+
+  menu.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var item = e.target.closest ? e.target.closest('.menu-item') : null;
+    if (!item) return;
+    if (item.getAttribute('data-armed') === '1') {
+      var action = item.getAttribute('data-action');
+      if (action === 'reset-recent') doResetRecent();
+      else if (action === 'reset-favorites') doResetFavorites();
+      menu.hidden = true;
+      disarmAll();
+    } else {
+      disarmAll();
+      arm(item);
+    }
+  });
+
+  // Any click outside closes the menu.
+  document.addEventListener('click', function () {
+    if (!menu.hidden) { menu.hidden = true; disarmAll(); }
+  });
+}
+
+function arm(item) {
+  item.setAttribute('data-armed', '1');
+  item.setAttribute('data-label', item.textContent);
+  item.textContent = 'Click again to confirm';
+  item._disarmTimer = setTimeout(function () { disarm(item); }, 3000);
+}
+
+function disarm(item) {
+  if (item.getAttribute('data-armed') === '1') {
+    var label = item.getAttribute('data-label');
+    if (label) item.textContent = label;
+    item.removeAttribute('data-armed');
+    if (item._disarmTimer) { clearTimeout(item._disarmTimer); item._disarmTimer = null; }
+  }
+}
+
+function disarmAll() {
+  var items = document.querySelectorAll('#settings-menu .menu-item');
+  for (var i = 0; i < items.length; i++) disarm(items[i]);
+}
+
+function doResetRecent() {
+  chrome.storage.sync.get(null, function (items) {
+    items = items || {};
+    var keys = Object.keys(items).filter(function (k) { return typeof items[k] === 'number'; });
+    keys.push(RECENT_ORDER_KEY);
+    chrome.storage.sync.remove(keys, function () { renderRecent(); });
+  });
+}
+
+function doResetFavorites() {
+  var was = favorites.slice();
+  favorites = [];
+  var obj = {};
+  obj[FAV_KEY] = [];
+  chrome.storage.sync.set(obj, function () {});
+  was.forEach(function (k) { markFavorited(k, false); });
+  renderFavorites();
+}
