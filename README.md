@@ -40,8 +40,7 @@ To add a kaomoji, add a string to the right array in `js/kaomoji.js`.
 ## Packaging
 
 Run `package.ps1` in PowerShell. It builds `kaomojiboard-<version>.zip` with just the files the
-extension needs. Upload that zip in the Chrome Web Store dashboard. See `STORE.md` for the listing
-text and steps.
+extension needs. Upload that zip in the Chrome Web Store dashboard.
 
 ## Privacy
 
