@@ -1,15 +1,16 @@
 # kaomojiBoard Privacy Policy
 
-_Last updated: August 17, 2026_
+_Last updated: August 18, 2026_
 
 kaomojiBoard does not collect, transmit, sell, or share any personal information.
 
 ## What the extension does with data
 
-kaomojiBoard keeps a count of how many times you have clicked each kaomoji. That count is
-what powers the "recent" tab, which sorts your most-used kaomojis to the front.
+kaomojiBoard tracks how many times you have clicked each kaomoji and how recently. Together
+these power the "frequently used" strip, which blends your most-clicked kaomoji with your
+most-recent picks at the top of the popup.
 
-This count is stored using Chrome's `chrome.storage.sync` API, so it lives in your own browser
+This data is stored using Chrome's `chrome.storage.sync` API, so it lives in your own browser
 profile. If you have Chrome Sync turned on, it syncs between your own signed-in Chrome
 installations through your own Google account. The developer has no access to it and never
 receives a copy of it.
@@ -28,7 +29,7 @@ identically offline.
 
 kaomojiBoard requests exactly one permission:
 
-- **`storage`**: used solely to remember the per-kaomoji click counts described above.
+- **`storage`**: used solely to remember the per-kaomoji click counts and recency order described above.
 
 It requests no host permissions, so it has no ability to read or modify the pages you visit.
 
